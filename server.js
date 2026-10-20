@@ -73,7 +73,7 @@ app.post('/criar-pix', async (req, res) => {
         failure: `https://contrato-rapido-zzo6.onrender.com/`,
         pending: `https://contrato-rapido-zzo6.onrender.com/`
       },
-      auto_return: 'approved',
+
       notification_url: `https://contrato-rapido-zzo6.onrender.com/webhook`
     };
     const result = await mercadopago.preferences.create(preference);
