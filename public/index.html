@@ -1,89 +1,153 @@
-
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Contrato Aluguel Completo</title>
-<style>body{font-family:Arial;max-width:700px;margin:20px auto;padding:15px}input,select{width:100%;padding:8px;margin:4px 0 10px}button{background:#009ee3;color:#fff;padding:12px;width:100%;border:0;border-radius:6px;font-size:16px;cursor:pointer}#pixBox{display:none;border:2px solid #00a650;padding:15px;border-radius:10px;text-align:center;margin-top:20px}#pixBox img{max-width:250px}</style>
-</head><body>
-<h2>Contrato Aluguel Completo</h2><p>Modelo 10 clausulas Lei 8.245/91 - <b>R$9,99 via PIX</b></p>
-<form id="formContrato">
-<h3>Locador</h3>
-<input name="nomeLocador" placeholder="Nome Locador" required>
-<input name="cpfLocador" placeholder="CPF Locador">
-<h3>Locatario</h3>
-<input name="nomeLocatario" placeholder="Nome Locatario *" required>
-<input name="cpfLocatario" placeholder="CPF Locatario * (11144477735)" required>
-<input name="emailLocatario" placeholder="Email Locatario *" required type="email">
-<h3>Imovel</h3>
-<input name="enderecoImovel" placeholder="Endereco Imovel *" required>
-<input name="tipoImovel" placeholder="Tipo (Casa/Apto)">
-<input name="valorAluguel" placeholder="Valor Aluguel *" required>
-<input name="vencimento" placeholder="Vencimento dia">
-<input name="prazoMeses" placeholder="Prazo meses">
-<input name="dataInicio" placeholder="Data inicio">
-<input name="cidade" placeholder="Cidade">
-<button type="submit">Gerar PIX R$9,99</button>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contrato Aluguel Completo Atualizado 2026</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;max-width:800px;margin:0 auto;padding:15px;background:#f5f7fb;color:#222}
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 4px 15px rgba(0,0,0,.08);margin-bottom:16px}
+h2{text-align:center;color:#111;margin:0 0 5px} .sub{text-align:center;color:#666;font-size:13px;margin-bottom:15px}
+h3{margin:18px 0 8px;color:#009ee3;font-size:15px;border-left:4px solid #009ee3;padding-left:8px}
+label{font-size:12px;font-weight:bold;color:#444;margin-top:8px;display:block}
+input,select{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #ccc;border-radius:6px;font-size:14px}
+input:focus{border-color:#009ee3;outline:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.grid2{grid-template-columns:1fr}}
+.btn{width:100%;padding:14px;background:#009ee3;color:#fff;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px}
+.btn:disabled{background:#aaa}
+#pixBox{display:none;text-align:center}
+#pixBox img{max-width:260px;border:8px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.15);border-radius:12px;margin:12px 0}
+.badge{display:inline-block;background:#00a650;color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;margin-bottom:8px}
+.lei{font-size:11px;color:#666;background:#eef6ff;padding:8px;border-radius:6px;margin:8px 0}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h2>📄 Contrato de Aluguel Completo</h2>
+<p class="sub">Modelo com <b>10 cláusulas atualizadas</b> - Lei 8.245/91 + Lei 12.112/09 + LGPD + Código Civil 2002<br>🔒 Só libera após <b>PIX R$9,99</b></p>
+<div class="lei">✅ Este modelo inclui: Objeto, Prazo, Valor/Reajuste IPCA, Encargos/IPTU, Garantia Caução/Fiador (Art.37), Obrigações, Benfeitorias, Rescisão, LGPD e Foro. Válido em cartório.</div>
+</div>
+
+<form id="formContrato" class="card">
+<h3>👤 LOCADOR (Dono do imóvel)</h3>
+<div class="grid2">
+<div><label>Nome completo *</label><input name="nomeLocador" placeholder="Ex: João da Silva" required></div>
+<div><label>CPF *</label><input name="cpfLocador" placeholder="000.000.000-00" required></div>
+</div>
+<div class="grid2">
+<div><label>RG</label><input name="rgLocador" placeholder="MG-12.345.678"></div>
+<div><label>Estado Civil</label><select name="estadoCivilLocador"><option value="">Selecione</option><option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viúvo(a)</option></select></div>
+</div>
+<label>Endereço completo do Locador</label><input name="enderecoLocador" placeholder="Rua, nº, bairro, cidade">
+
+<h3>👤 LOCATÁRIO (Quem vai alugar)</h3>
+<div class="grid2">
+<div><label>Nome completo *</label><input name="nomeLocatario" placeholder="Ex: Maria Souza" required></div>
+<div><label>CPF * (para PIX funcionar)</label><input name="cpfLocatario" placeholder="111.444.777-35" required></div>
+</div>
+<div class="grid2">
+<div><label>RG</label><input name="rgLocatario" placeholder="MG-98.765.432"></div>
+<div><label>Profissão</label><input name="profissaoLocatario" placeholder="Ex: Engenheiro"></div>
+</div>
+<div class="grid2">
+<div><label>E-mail * (para LGPD e comprovante)</label><input name="emailLocatario" type="email" placeholder="maria@email.com" required></div>
+<div><label>Endereço atual</label><input name="enderecoAtualLocatario" placeholder="Onde mora hoje"></div>
+</div>
+
+<h3>🏠 IMÓVEL</h3>
+<label>Endereço completo do imóvel *</label><input name="enderecoImovel" placeholder="Rua, nº, bairro, cidade, CEP" required>
+<div class="grid2">
+<div><label>Tipo</label><select name="tipoImovel"><option value="">Selecione</option><option>Casa</option><option>Apartamento</option><option>Kitnet</option><option>Sala Comercial</option></select></div>
+<div><label>Mobiliado?</label><select name="mobiliado"><option value="não">Não</option><option value="sim">Sim - com inventário</option></select></div>
+</div>
+<div class="grid2">
+<div><label>IPTU (quem paga?)</label><select name="iptu"><option>Locatário</option><option>Locador</option><option>Isento</option></select></div>
+<div><label>Estado do imóvel</label><select name="estadoImovel"><option>Bom estado</option><option>Novo</option><option>Reformado</option><option>Usado</option></select></div>
+</div>
+
+<h3>💰 VALORES E PRAZO</h3>
+<div class="grid2">
+<div><label>Valor Aluguel R$ *</label><input name="valorAluguel" placeholder="Ex: 1.500,00" required></div>
+<div><label>Vencimento (dia)</label><input name="vencimento" placeholder="Ex: 05" type="number"></div>
+</div>
+<div class="grid2">
+<div><label>Prazo em meses *</label><input name="prazoMeses" placeholder="12" type="number" required></div>
+<div><label>Data início *</label><input name="dataInicio" type="date" required></div>
+</div>
+<label>Chave PIX do Locador (para receber aluguel) *</label><input name="chavePixLocador" placeholder="CPF, celular ou chave aleatória" required>
+
+<div class="grid2">
+<div><label>Garantia (Art. 37 Lei 8.245/91)</label><select name="garantia" id="garantia"><option value="caução">Caução (até 3 aluguéis)</option><option value="fiador">Fiador</option><option value="seguro">Seguro Fiança</option><option value="sem">Sem garantia</option></select></div>
+<div><label>Valor Caução R$</label><input name="valorCaucao" placeholder="Ex: 4.500,00 (se caução)"></div>
+</div>
+
+<div id="boxFiador" style="display:none;background:#fff8e6;padding:10px;border-radius:8px;border:1px dashed #e6a800;margin-top:8px">
+<label>👤 FIADOR (quando garantia = Fiador)</label>
+<div class="grid2">
+<div><input name="nomeFiador" placeholder="Nome completo Fiador"></div>
+<div><input name="cpfFiador" placeholder="CPF Fiador"></div>
+</div>
+<p style="font-size:11px;color:#8a6d00;margin:4px 0">Fiador renuncia ao benefício de ordem Art. 827 CC - responsabilidade até entrega das chaves Art. 39 Lei 8.245/91</p>
+</div>
+
+<div class="grid2">
+<div><label>Cidade</label><input name="cidade" placeholder="Ex: Contagem"></div>
+<div><label>Foro (Comarca)</label><input name="foro" placeholder="Ex: Contagem/MG"></div>
+</div>
+
+<button type="submit" class="btn">💳 Gerar PIX R$9,99 e Liberar Contrato Atualizado</button>
+<p style="font-size:11px;color:#888;text-align:center;margin-top:8px">Pagamento 100% seguro via Mercado Pago - Liberação automática em 3 segundos</p>
 </form>
 
-<div id="pixBox">
-<h3>✅ PIX Gerado! Pague para liberar</h3>
+<div id="pixBox" class="card">
+<span class="badge">PIX GERADO COM SUCESSO</span>
+<h3 style="text-align:center">✅ Escaneie o QR Code para pagar R$9,99</h3>
 <img id="qrImg" src="">
-<p><b>Copia e cola PIX:</b></p>
-<textarea id="qrCode" style="width:100%;height:80px"></textarea>
-<p id="statusPix">⏳ Aguardando pagamento... verificando a cada 3s</p>
-<button id="btnBaixar" style="display:none;background:#00a650">⬇️ Baixar Contrato PDF</button>
+<p style="font-size:13px"><b>Ou copie o código PIX copia e cola:</b></p>
+<textarea id="qrCode" style="width:100%;height:90px;font-size:11px"></textarea>
+<p id="statusPix" style="font-weight:bold;color:#009ee3">⏳ Aguardando pagamento... verificando a cada 3s<br><small style="font-weight:normal">Após pagar, o PDF atualizado com 10 cláusulas legais será liberado automaticamente</small></p>
+<button id="btnBaixar" style="display:none;width:100%;padding:14px;background:#00a650;color:#fff;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer">⬇️ BAIXAR CONTRATO ATUALIZADO PDF</button>
 </div>
 
 <script>
-let refAtual = null;
-let intervalo = null;
+let refAtual=null, intervalo=null;
+document.getElementById('garantia').onchange=function(){ document.getElementById('boxFiador').style.display=this.value==='fiador'?'block':'none'; };
 
-document.getElementById('formContrato').onsubmit = async (e)=>{
+document.getElementById('formContrato').onsubmit=async(e)=>{
   e.preventDefault();
-  const dados = Object.fromEntries(new FormData(e.target).entries());
-  const btn = e.target.querySelector('button');
-  btn.textContent = 'Gerando PIX...';
-  btn.disabled = true;
-  
+  const dados=Object.fromEntries(new FormData(e.target).entries());
+  const btn=e.target.querySelector('button'); btn.textContent='Gerando PIX...'; btn.disabled=true;
   try{
-    const r = await fetch('/criar-pagamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(dados)});
-    const j = await r.json();
-    if(j.error) throw new Error(j.error);
-    
-    refAtual = j.external_reference;
-    console.log('PIX:', j);
-    
-    document.getElementById('qrImg').src = 'data:image/png;base64,' + j.qr_code_base64;
-    document.getElementById('qrCode').value = j.qr_code;
-    document.getElementById('pixBox').style.display = 'block';
-    document.getElementById('formContrato').style.display = 'none';
-    window.scrollTo(0,1000);
-    
-    // Começa verificar pagamento
-    intervalo = setInterval(verificar, 3000);
-    
-  }catch(err){
-    alert('Erro: '+err.message);
-    btn.textContent = 'Gerar PIX R$9,99';
-    btn.disabled = false;
-  }
+    const r=await fetch('/criar-pagamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(dados)});
+    const j=await r.json(); if(j.error) throw new Error(j.error);
+    refAtual=j.external_reference;
+    document.getElementById('qrImg').src='data:image/png;base64,'+j.qr_code_base64;
+    document.getElementById('qrCode').value=j.qr_code;
+    document.getElementById('pixBox').style.display='block';
+    document.getElementById('formContrato').style.display='none';
+    window.scrollTo(0,document.body.scrollHeight);
+    intervalo=setInterval(verificar,3000);
+  }catch(err){ alert('Erro: '+err.message); btn.textContent='💳 Gerar PIX R$9,99 e Liberar Contrato Atualizado'; btn.disabled=false; }
 };
 
 async function verificar(){
   if(!refAtual) return;
-  const r = await fetch('/verificar-pagamento/'+refAtual);
-  const j = await r.json();
+  const r=await fetch('/verificar-pagamento/'+refAtual); const j=await r.json();
   if(j.pago){
     clearInterval(intervalo);
-    document.getElementById('statusPix').innerHTML = '✅ <b>Pagamento aprovado! Liberado!</b>';
-    const btn = document.getElementById('btnBaixar');
-    btn.style.display = 'block';
-    btn.onclick = async ()=>{
-      const resp = await fetch('/gerar-pdf/'+refAtual,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(document.getElementById('formContrato')).entries()))});
-      if(resp.status===402){ alert('Ainda nao confirmado'); return; }
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='contrato.pdf'; a.click();
+    document.getElementById('statusPix').innerHTML='✅ <b style="color:#00a650">PAGAMENTO APROVADO! CONTRATO LIBERADO!</b><br><small>10 cláusulas atualizadas 2026 - Lei 8.245/91 + LGPD</small>';
+    const btn=document.getElementById('btnBaixar'); btn.style.display='block';
+    btn.onclick=async()=>{
+      const formDados=Object.fromEntries(new FormData(document.getElementById('formContrato')).entries());
+      const resp=await fetch('/gerar-pdf/'+refAtual,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(formDados)});
+      if(resp.status===402){ alert('Aguardando confirmação'); return; }
+      const blob=await resp.blob(); const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='Contrato-Aluguel-Atualizado-'+refAtual+'.pdf'; a.click();
     };
   }
 }
 </script>
-</body></html>
+</body>
+</html>
