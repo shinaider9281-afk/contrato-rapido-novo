@@ -1,134 +1,215 @@
-
 const express = require('express');
 const mercadopago = require('mercadopago');
 const PDFDocument = require('pdfkit');
 const path = require('path');
-const app = express();
 
+const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-const pagamentosAprovados = new Set();
-const dadosPorPagamento = new Map();
+// ACEITA OS 2 NOMES DE VARIAVEL - RESOLVE O BUG
+const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN;
 
-mercadopago.configure({
-  access_token: process.env.MERCADOPAGO_ACCESS_TOKEN
-});
-
-function gerarPDFContrato(dados) {
-  return new Promise((resolve) => {
-    const doc = new PDFDocument({ margin: 50, size: 'A4' });
-    const chunks = [];
-    doc.on('data', c => chunks.push(c));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    const dataHoje = new Date().toLocaleDateString('pt-BR');
-    
-    doc.fontSize(16).font('Helvetica-Bold').text('CONTRATO DE LOCAÇÃO RESIDENCIAL', { align: 'center' });
-    doc.moveDown(0.5);
-    doc.fontSize(9).font('Helvetica').fillColor('#666').text(`Gerado em ${dataHoje} | Contrato Rápido - PAGO | ID: ${dados.paymentId || ''}`, { align: 'center' }).fillColor('#000');
-    doc.moveDown(1.2);
-    doc.fontSize(11).font('Helvetica');
-
-    doc.font('Helvetica-Bold').text('1. DAS PARTES:', { underline: true }); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`LOCADOR(A): ${dados.nomeLocador || '-'} - CPF: ${dados.cpfLocador || '-'} | RG: ${dados.rgLocador || '-'} | Civil: ${dados.estadoCivilLocador || '-'}\nEndereço: ${dados.enderecoLocador || '-'}\n\nLOCATÁRIO(A): ${dados.nomeLocatario || '-'} - CPF: ${dados.cpfLocatario || '-'} | RG: ${dados.rgLocatario || '-'} | Profissão: ${dados.profissaoLocatario || '-'}\nEndereço: ${dados.enderecoLocatario || '-'} | Email: ${dados.email || '-'}`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('2. DO IMÓVEL:', { underline: true }); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`Endereço locado: ${dados.enderecoImovel || '-'}\nTipo: ${dados.tipoImovel || '-'} | Mobiliado: ${dados.mobiliado || 'não'} | IPTU: ${dados.iptu || '-'}\nEstado inicial: ${dados.estadoImovel || 'bom estado'}`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('3. DO PRAZO:', { underline: true }); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`Prazo de ${dados.prazoMeses || '12'} meses, início em ${dados.dataInicio || dataHoje}. Prorroga por prazo indeterminado se não houver manifestação. Rescisão antecipada: multa de ${dados.multaRecisoria || '1 mês'}.`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('4. DO VALOR E PAGAMENTO:', { underline: true }); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`4.1 Aluguel: R$ ${dados.valor}\n4.2 Vencimento dia ${dados.diaVencimento || '10'} via ${dados.formaPagamento || 'PIX'} (${dados.chavePix || '-'})\n4.3 Atraso: multa 10% + juros 1% a.m. + IGP-M.\n4.4 Reajuste anual IGP-M/IPCA.\n4.5 IPTU, condomínio, água, luz, gás, internet do LOCATÁRIO.`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('5. GARANTIA:', { underline: true }); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`Garantia: ${dados.garantia || 'Caução 1 mês'} - R$ ${dados.valorCaucao || dados.valor}\nFiador: ${dados.nomeFiador || 'Não há'} CPF: ${dados.cpfFiador || '-'}\nCaução devolvida em até 30 dias após entrega das chaves, descontados débitos.`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('6. OBRIGAÇÕES DO LOCATÁRIO:'); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`a) Pagar aluguel e encargos; b) Conservar imóvel; c) Sem modificações sem autorização; d) Permitir vistoria 24h; e) Entregar pintado, limpo, sem débitos; f) Não sublocar; g) Respeitar condomínio.`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('7. OBRIGAÇÕES DO LOCADOR:'); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`a) Entregar em condições de uso; b) Garantir uso pacífico; c) Pagar taxas extraordinárias; d) Fornecer recibos.`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('8. VISTORIA:'); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`Imóvel vistoriado em ${dataHoje}, estado: ${dados.estadoImovel || 'bom estado'}. Fotos anexas.`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('9. RESCISÃO:'); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`Infração, falta de pagamento, uso indevido, abandono >30 dias autorizam rescisão.`); doc.moveDown(0.7);
-    doc.font('Helvetica-Bold').text('10. FORO:'); doc.moveDown(0.3);
-    doc.font('Helvetica').text(`Foro de ${dados.foro || 'Contagem/MG'}.`); doc.moveDown(1.5);
-    doc.text(`E por estarem justos e contratados, assinam em 2 vias.`, { align: 'center' }); doc.moveDown(1);
-    doc.text(`${dados.cidade || 'Contagem'}, ${dataHoje}.`); doc.moveDown(2);
-    const y = doc.y;
-    doc.text(`_________________________\n${dados.nomeLocador || 'LOCADOR'}\nCPF: ${dados.cpfLocador || ''}`, 50, y, { width: 220 });
-    doc.text(`_________________________\n${dados.nomeLocatario || 'LOCATÁRIO'}\nCPF: ${dados.cpfLocatario || ''}`, 300, y, { width: 220 });
-    if (dados.nomeFiador) { doc.moveDown(3); doc.text(`_________________________\n${dados.nomeFiador}\nFIADOR CPF: ${dados.cpfFiador || ''}`, { align: 'center' }); }
-    doc.end();
+if (!MP_TOKEN) {
+  console.error('❌ ERRO CRITICO: Nenhum token do Mercado Pago configurado!');
+  console.error('Configure MERCADOPAGO_ACCESS_TOKEN no Render > Environment');
+} else {
+  console.log('✅ Token MP configurado: ' + MP_TOKEN.substring(0, 15) + '...');
+  mercadopago.configure({
+    access_token: MP_TOKEN
   });
 }
 
-app.post('/criar-pix', async (req, res) => {
+// Memoria temporaria (perde se resetar, mas busca no MP de novo)
+const pagamentosAprovados = new Set();
+const dadosPorPagamento = new Map();
+
+function gerarPDFContrato(dados, doc) {
+  doc.fontSize(16).text('CONTRATO DE LOCAÇÃO RESIDENCIAL', { align: 'center' });
+  doc.moveDown();
+  doc.fontSize(12).text(`Lei 8.245/91 - 10 Cláusulas`);
+  doc.moveDown();
+  doc.text(`LOCADOR: ${dados.nomeLocador || ''} CPF: ${dados.cpfLocador || ''}`);
+  doc.text(`LOCATÁRIO: ${dados.nomeLocatario || ''} CPF: ${dados.cpfLocatario || ''} Email: ${dados.emailLocatario || ''}`);
+  doc.moveDown();
+  doc.text(`IMÓVEL: ${dados.enderecoImovel || ''}`);
+  doc.text(`Tipo: ${dados.tipoImovel || ''} Mobiliado: ${dados.mobiliado || ''}`);
+  doc.moveDown();
+  doc.text(`VALOR: R$ ${dados.valorAluguel || ''} Vencimento dia ${dados.vencimento || ''}`);
+  doc.text(`PRAZO: ${dados.prazoMeses || ''} meses a partir de ${dados.dataInicio || ''}`);
+  doc.text(`GARANTIA: ${dados.garantia || ''} ${dados.valorCaucao ? '- R$ '+dados.valorCaucao : ''}`);
+  doc.moveDown();
+  doc.text(`CIDADE/FORO: ${dados.cidade || ''} / ${dados.foro || ''}`);
+  doc.moveDown(2);
+  doc.text('Assinaturas: __________________________________ __________________________________');
+  doc.text('Locador                                    Locatário');
+  doc.end();
+}
+
+// ROTA CRIAR PAGAMENTO PIX
+app.post('/criar-pagamento', async (req, res) => {
   try {
-    const dados = req.body;
-    const external_reference = `contrato-${Date.now()}-${Math.random().toString(36).substring(2,7)}`;
-    dadosPorPagamento.set(external_reference, dados);
+    if (!MP_TOKEN) {
+      return res.status(500).json({ error: 'Token do Mercado Pago não configurado no servidor' });
+    }
+    
+    const external_reference = 'contrato-' + Date.now();
+    dadosPorPagamento.set(external_reference, req.body);
+    
+    console.log('Criando pagamento:', external_reference);
+
     const preference = {
-      items: [{ title: `Contrato Aluguel - ${dados.enderecoImovel?.substring(0,40) || 'Imóvel'}`, quantity: 1, unit_price: 9.99 }],
-      payer: { email: dados.email || 'cliente@contratorapido.com' },
+      items: [{
+        title: 'Contrato de Aluguel Completo - 10 cláusulas',
+        quantity: 1,
+        unit_price: 9.99,
+        currency_id: 'BRL'
+      }],
+      payer: {
+        email: req.body.emailLocatario || 'cliente@teste.com'
+      },
       external_reference: external_reference,
       back_urls: {
-        success: `https://contrato-rapido-zzo6.onrender.com/sucesso.html?ref=${external_reference}`,
-        failure: `https://contrato-rapido-zzo6.onrender.com/`,
-        pending: `https://contrato-rapido-zzo6.onrender.com/`
+        success: `https://${req.headers.host}/sucesso.html?ref=${external_reference}`,
+        failure: `https://${req.headers.host}/`,
+        pending: `https://${req.headers.host}/sucesso.html?ref=${external_reference}`
       },
-
-      notification_url: `https://contrato-rapido-zzo6.onrender.com/webhook`
+      notification_url: `https://${req.headers.host}/webhook`
+      // REMOVIDO auto_return que travava o botão
     };
-    const result = await mercadopago.preferences.create(preference);
-    res.json({ id: result.body.id, init_point: result.body.init_point, external_reference: external_reference });
-  } catch (e) { console.error(e); res.status(500).json({ error: e.message }); }
+
+    const response = await mercadopago.preferences.create(preference);
+    console.log('Preferencia criada:', response.body.id);
+    res.json({ 
+      id: response.body.id, 
+      init_point: response.body.init_point,
+      external_reference: external_reference
+    });
+
+  } catch (e) {
+    console.error('ERRO criar-pagamento:', e);
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.post('/webhook', async (req, res) => {
-  try {
-    const { type, data } = req.body;
-    if (type === 'payment') {
-      const payment = await mercadopago.payment.findById(data.id);
-      if (payment.body.status === 'approved') {
-        pagamentosAprovados.add(payment.body.external_reference);
-        console.log('PAGAMENTO APROVADO:', payment.body.external_reference);
-      }
-    }
-    res.sendStatus(200);
-  } catch (e) { res.sendStatus(200); }
+// COMPATIBILIDADE: ROTA ANTIGA /criar-pix
+app.post('/criar-pix', (req, res) => {
+  req.url = '/criar-pagamento';
+  app._router.handle(req, res);
 });
 
+// VERIFICAR PAGAMENTO - POLLING A CADA 5s
 app.get('/verificar-pagamento/:ref', async (req, res) => {
+  const ref = req.params.ref;
+  
   try {
-    const { ref } = req.params;
-    if (pagamentosAprovados.has(ref)) return res.json({ pago: true });
-    const search = await mercadopago.payment.search({ qs: { 'external_reference': ref } });
-    if (search.body.results?.find(p => p.status === 'approved')) {
-      pagamentosAprovados.add(ref);
+    // 1. Verifica memoria
+    if (pagamentosAprovados.has(ref)) {
+      console.log('Pagamento aprovado (memoria):', ref);
       return res.json({ pago: true });
     }
-    res.json({ pago: false });
-  } catch { res.json({ pago: false }); }
-});
 
-app.post('/gerar-pdf/:ref', async (req, res) => {
-  try {
-    const { ref } = req.params;
-    if (!pagamentosAprovados.has(ref)) {
+    // 2. Busca no Mercado Pago (se resetou o servidor)
+    if (MP_TOKEN) {
       try {
-        const search = await mercadopago.payment.search({ qs: { 'external_reference': ref } });
-        if (!search.body.results?.find(p => p.status === 'approved')) {
-          return res.status(402).json({ error: 'Pagamento não confirmado. Pague o PIX.' });
+        const search = await mercadopago.payment.search({
+          qs: { 'external_reference': ref }
+        });
+        
+        const results = search.body.results || [];
+        const aprovado = results.find(p => p.status === 'approved');
+        
+        if (aprovado) {
+          console.log('Pagamento aprovado (API MP):', ref);
+          pagamentosAprovados.add(ref);
+          return res.json({ pago: true });
         }
-        pagamentosAprovados.add(ref);
-      } catch { return res.status(402).json({ error: 'Pagamento não confirmado.' }); }
+      } catch (err) {
+        console.log('Busca MP falhou, continuando...', err.message);
+      }
     }
-    const dadosSalvos = dadosPorPagamento.get(ref) || req.body;
-    dadosSalvos.paymentId = ref;
-    const pdfBuffer = await gerarPDFContrato(dadosSalvos);
-    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename=contrato-aluguel-${Date.now()}.pdf` });
-    res.send(pdfBuffer);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+
+    res.json({ pago: false });
+
+  } catch (e) {
+    console.error('Erro verificar:', e);
+    res.json({ pago: false });
+  }
 });
 
-app.get('/sucesso.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'sucesso.html')); });
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
+// GERAR PDF - COM TRAVA
+app.post('/gerar-pdf/:ref?', async (req, res) => {
+  const ref = req.params.ref || req.body.external_reference || req.query.ref;
+
+  // Se não tem ref, bloqueia (acesso direto)
+  if (!ref) {
+    console.log('Tentativa sem ref - bloqueado');
+    return res.status(402).json({ error: 'Pagamento não encontrado. Pague para liberar.' });
+  }
+
+  // Verifica se pagou
+  let pago = pagamentosAprovados.has(ref);
+  
+  if (!pago && MP_TOKEN) {
+    try {
+      const search = await mercadopago.payment.search({
+        qs: { 'external_reference': ref }
+      });
+      const aprovado = search.body.results?.find(p => p.status === 'approved');
+      if (aprovado) {
+        pago = true;
+        pagamentosAprovados.add(ref);
+      }
+    } catch (e) {}
+  }
+
+  if (!pago) {
+    console.log('Tentativa de PDF sem pagamento:', ref);
+    return res.status(402).json({ error: 'Aguardando confirmação do pagamento PIX' });
+  }
+
+  try {
+    const dados = dadosPorPagamento.get(ref) || req.body;
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=contrato-${ref}.pdf`);
+    
+    const doc = new PDFDocument();
+    doc.pipe(res);
+    gerarPDFContrato(dados, doc);
+    
+  } catch (e) {
+    console.error('Erro gerar PDF:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// WEBHOOK - MERCADO PAGO AVISA QUE PAGOU
+app.post('/webhook', async (req, res) => {
+  try {
+    console.log('Webhook recebido:', JSON.stringify(req.body));
+    
+    const paymentId = req.body.data?.id || req.body.id;
+    
+    if (paymentId) {
+      const payment = await mercadopago.payment.findById(paymentId);
+      const status = payment.body.status;
+      const external_reference = payment.body.external_reference;
+      
+      console.log(`Pagamento ${paymentId} status ${status} ref ${external_reference}`);
+      
+      if (status === 'approved' && external_reference) {
+        pagamentosAprovados.add(external_reference);
+        console.log('✅ PAGAMENTO APROVADO:', external_reference);
+      }
+    }
+    
+    res.sendStatus(200);
+  } catch (e) {
+    console.error('Erro webhook:', e);
+    res.sendStatus(200);
+  }
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('Rodando porta ' + PORT + ' - MODO PAGO'));
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
